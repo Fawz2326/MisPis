@@ -58,12 +58,38 @@ def auth(username, password):
         print("Неправильный логин или пароль")
         return None
 
-def main_menu(cart):
+def create_order(cart, user):
+    if cart['products']:
+        db = sqlite3.connect(database_path)
+        cursor = db.cursor()
+        cursor.execute("INSERT INTO orders (customer_id) VALUES (?)", (user[0],))
+        db.commit()
+
+        cursor.execute("SELECT id FROM orders WHERE customer_id = (?) ORDER BY id DESC LIMIT 1", (user[0],))
+        order = cursor.fetchone()[0]
+
+        total_price = 0
+        data_products = []
+        if cart['products']:
+            for product in cart['products']:
+                data = [product[2][0][0], order, product[3]]
+                total_price += product[5]
+                data_products.append(data)
+
+        cursor.executemany("INSERT INTO orderitems (product_id, order_id, quantity) VALUES (?, ?, ?)", data_products)
+        db.commit()
+
+        cursor.execute("UPDATE orders SET (total_price) = (?) WHERE id = (?) ", (total_price, order,))
+        db.commit()
+        db.close()
+    else:
+        print("Корзина пуста")
+
+def main_menu(cart, user):
     while True:
         print("1. Посмотреть каталог")
         print("2. Посмотреть корзину")
-        print("3. Оформить заказ")
-        print("4. Выйти из аккаунта")
+        print("3. Выйти из аккаунта")
         choice = input("Enter your choice: ")
         if choice == "1":
             catalog_menu(cart)
@@ -83,6 +109,8 @@ def main_menu(cart):
                 print("3. Изменение количества товара")
                 print("4. Выход из меню")
                 choice = input("Введите ваш выбор: ")
+                if choice == "1":
+                    create_order(cart, user)
                 if choice == "2":
                     choice = input("Какую позицию вы хотите удалить?: ")
                     try:
@@ -115,8 +143,7 @@ def main_menu(cart):
 
                 if choice == "4":
                     break
-
-        elif choice == "4":
+        elif choice == "3":
             return None
 
 def admin_menu():
@@ -135,7 +162,7 @@ def auth_menu():
         password = input("Enter your password: ")
         user = auth(username, password)
         if user:
-            return user[4]
+            return user
     elif choice == "2":
         username = input("Enter your username: ")
         password = input("Enter your password: ")
@@ -143,7 +170,7 @@ def auth_menu():
         role_id = 1
         user = register(username, password, name, role_id)
         if user:
-            return user[4]
+            return user
     elif choice == "3":
         print("Exiting the program")
         raise SystemExit(1)
@@ -222,15 +249,18 @@ def get_product(id):
 
 def main():
     user_role_id = None
+    user = None
     cart = {'products': []}
     while True:
         # Блок меню авторизации
         if user_role_id is None:
-            user_role_id = auth_menu()
-            cart = {'products': []}
+            user = auth_menu()
+            if user:
+                user_role_id = user[4]
+                cart = {'products': []}
         # Блок основного меню
         if user_role_id == 1:
-            user_role_id = main_menu(cart)
+            user_role_id = main_menu(cart, user)
         elif user_role_id == 2:
             user_role_id = admin_menu()
 

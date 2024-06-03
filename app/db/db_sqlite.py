@@ -26,11 +26,11 @@ try:
             )""",
     
             """CREATE TABLE IF NOT EXISTS orders (
-                   order_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                   id INTEGER PRIMARY KEY AUTO_INCREMENT,
                    customer_id INTEGER NOT NULL,
-                   order_date DATE NOT NULL,
-                   total_amount DECIMAL(10, 2) NOT NULL,
-                   FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)    
+                   order_date DATE NOT NULL DEFAULT CURRENT_DATE,
+                   total_price DECIMAL(10, 2) NOT NULL,
+                   FOREIGN KEY (customer_id) REFERENCES Customers(id)    
             )""",
     
             """CREATE TABLE IF NOT EXISTS orderitems (
@@ -38,7 +38,6 @@ try:
                    order_id INTEGER NOT NULL,
                    product_id INTEGER NOT NULL,
                    quantity INTEGER NOT NULL,
-                   price DECIMAL(10, 2) NOT NULL,
                    FOREIGN KEY (order_id) REFERENCES Orders(order_id),
                    FOREIGN KEY (product_id) REFERENCES Products(product_id)
             )""",
