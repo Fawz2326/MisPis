@@ -1,9 +1,17 @@
 import sqlite3
+import bcrypt
 
 database_path = 'db/database.db'
 
+def hash_password(password):
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed_password.decode('utf-8')
 
-def register(username, password, name, role_id, country):
+def check_password(password, hash_password):
+    return bcrypt.checkpw(password.encode('utf-8'), hash_password.encode('utf-8'))
+
+def register(username, password, name, role_id):
     db = sqlite3.connect(database_path)
     cursor = db.cursor()
 
@@ -15,9 +23,10 @@ def register(username, password, name, role_id, country):
         print("Пользователь с таким логином уже зарегистрирован")
         return
 
-    query = "INSERT INTO customers (username, password, name, role_id, country) VALUES (?, ?, ?, ?, ?)"
+    query = "INSERT INTO customers (username, password, name, role_id) VALUES (?, ?, ?, ?)"
     try:
-        cursor.execute(query, (username, password, name, role_id, country))
+        password = hash_password(password)
+        cursor.execute(query, (username, password, name, role_id))
         db.commit()
         print("Регистрация успешна")
         db.close()
@@ -30,33 +39,39 @@ def auth(username, password):
     db = sqlite3.connect(database_path)
     cursor = db.cursor()
 
-    query = """SELECT * FROM customers WHERE username=? AND password=?"""
-    cursor.execute(query, (username, password))
+    query = """SELECT * FROM customers WHERE username=?"""
+    cursor.execute(query, (username, ))
     user = cursor.fetchone()
 
     db.close()
 
     if user:
-        print("Вы вошли успешно")
-        return user
+        saved_password = user[3]
+        if check_password(password, saved_password):
+            print("Вы вошли успешно")
+            return user
+        else:
+            print("Неправильный логин или пароль")
+            return None
     else:
         print("Неправильный логин или пароль")
+        return None
 
-def main_menu(role_id):
-    if role_id == 1:
+def main_menu():
+    while True:
         print("1. Посмотреть каталог")
         print("2. Посмотреть корзину")
         print("3. Оформить заказ")
-        print("4. Выйти")
-    elif role_id == 2:
-        print("1. Посмотреть каталог")
-        print("2. Посмотреть корзину")
-        print("3. Оформить заказ")
-        print("4. Выйти")
-    print("3. Logout")
+        print("4. Выйти из аккаунта")
+        choice = input("Enter your choice: ")
+        if choice == 1:
+            catalog_menu()
+        if choice == 4:
+            return None
+        break
 
-    choice = input("Enter your choice: ")
-    return choice
+def admin_menu():
+    pass    
 
 
 def auth_menu():
@@ -66,7 +81,23 @@ def auth_menu():
     print("3. Exit")
 
     choice = input("Enter your choice: ")
-    return choice
+    if choice == "1":
+        username = input("Enter your username: ")
+        password = input("Enter your password: ")
+        user = auth(username, password)
+        if user:
+            return user[4]
+    elif choice == "2":
+        username = input("Enter your username: ")
+        password = input("Enter your password: ")
+        name = input("Enter your name: ")
+        role_id = 1
+        user = register(username, password, name, role_id)
+        if user:
+            return user[4]
+    elif choice == "3":
+        print("Exiting the program")
+        return False
 
 def catalog_menu():
     print("Catalog Menu")
@@ -89,35 +120,16 @@ def get_all_products():
     return products
 
 def main():
-    user_role_id = ""
+    user_role_id = None
     while True:
         # Блок меню авторизации
-        if user_role_id == "":
-            choice = auth_menu()
-            if choice == "1":
-                username = input("Enter your username: ")
-                password = input("Enter your password: ")
-                user = auth(username, password)
-                user_role_id = user[4]
-            elif choice == "2":
-                username = input("Enter your username: ")
-                password = input("Enter your password: ")
-                name = input("Enter your name: ")
-                role_id = input("Enter your role_id: ")
-                user = register(username, password, name, role_id)
-                if user:
-                    user_role_id = user[4]
-            elif choice == "3":
-                print("Exiting the program")
-                break
+        if user_role_id is None:
+            user_role_id = auth_menu()
         # Блок основного меню
-        choice = main_menu(user_role_id)
-        if choice == "1":
-            choice = catalog_menu()
-            if choice == "1":
-                print(get_all_products())
-            if choice == "2":
-                break
+        if user_role_id == 1:
+            user_role_id = main_menu()
+        elif user_role_id == 2:
+            user_role_id = admin_menu()
 
 
 if __name__ == "__main__":
