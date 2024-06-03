@@ -85,6 +85,16 @@ def create_order(cart, user):
     else:
         print("Корзина пуста")
 
+def create_product(name, category, subcategory, price):
+    db = sqlite3.connect(database_path)
+    cursor = db.cursor()
+    cursor.execute("INSERT INTO products (name, category, subcategory, price) VALUES (?,?,?,?)",
+                    (name, category, subcategory, price)
+                    )
+    db.commit()
+    print("Товар успешно создан")
+    db.close()
+
 def main_menu(cart, user):
     while True:
         print("1. Посмотреть каталог")
@@ -147,7 +157,24 @@ def main_menu(cart, user):
             return None
 
 def admin_menu():
-    pass    
+    while True:
+        print("1. Создать товар")
+        print("2. Получить список заказов")
+        print("3. Выйти из аккаунта")
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            name = input("Введите имя продукции: ")
+            category = input("Введите категорию продукции: ")
+            subcategory = input("Введите подкатегорию продукции: ")
+            try:
+                price = int(input("Введите стоимость продукции: "))
+            except:
+                print("Цена должна быть числом")
+                continue
+            create_product(name, category, subcategory, price)
+        if choice == "6":
+            return None  
 
 
 def auth_menu():
@@ -167,7 +194,7 @@ def auth_menu():
         username = input("Enter your username: ")
         password = input("Enter your password: ")
         name = input("Enter your name: ")
-        role_id = 1
+        role_id = 2
         user = register(username, password, name, role_id)
         if user:
             return user
