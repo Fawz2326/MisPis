@@ -7,8 +7,8 @@ try:
         cursor = db.cursor()
         queries = [
             """CREATE TABLE IF NOT EXISTS products (
-                   product_id INTEGER PRIMARY KEY AUTO_INCREMENT,
-                   product_name VARCHAR(255) NOT NULL,
+                   id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                   name VARCHAR(255) NOT NULL,
                    category VARCHAR(100) NOT NULL,
                    subcategory VARCHAR(100),
                    description TEXT,
