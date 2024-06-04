@@ -90,6 +90,7 @@ def create_order(cart, user):
         cursor.execute("UPDATE orders SET (total_price) = (?) WHERE id = (?) ", (total_price, order,))
         db.commit()
         cart['products'] = []
+        print(f'Заказ {order} успешно создан')
         db.close()
     else:
         print("Корзина пуста")
@@ -306,7 +307,7 @@ def auth_menu():
         username = input("Enter your username: ")
         password = input("Enter your password: ")
         name = input("Enter your name: ")
-        role_id = 2
+        role_id = 1
         user = register(username, password, name, role_id)
         if user:
             return user
@@ -342,7 +343,7 @@ def catalog_menu(cart):
                     continue
                 product = ["1", "Продукция", get_product(choice)]
 
-                if product:
+                if product[2] is not None:
                     quantity = input("Введите количество товара: ")
                     try:
                         quantity = int(quantity)
@@ -384,7 +385,10 @@ def get_product(id):
 
     db.close()
 
-    return product
+    if product:
+        return product
+    else:
+        return None
 
 def main():
     user_role_id = None
