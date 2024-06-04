@@ -1,8 +1,16 @@
 import sqlite3
 import bcrypt
 from prettytable import PrettyTable
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from db.models import Category, Style, Set, Product, OrderItem, SetItem, Role, User, SetOrder, Order
+from sqlalchemy import inspect
 
 database_path = 'db/database.db'
+
+engine = create_engine('sqlite:///db/database.db')
+Session = sessionmaker(bind=engine)
+session = Session()
 
 def hash_password(password):
     salt = bcrypt.gensalt()
@@ -156,26 +164,93 @@ def main_menu(cart, user):
         elif choice == "3":
             return None
 
+def get_all_products_orm():
+    products = session.query(Product).all()
+
+    table = PrettyTable()
+    table.field_names = ["ID", "Name", "Category", "Subcategory", "Price"]
+
+    rows = []
+    for product in products:
+        rows.append([product.id, product.name, product.category, product.subcategory, product.price])
+
+    table.add_rows(rows)
+
+    print(table)
+
+
+def add_product():
+    name = input("Введите название продукции: ")
+    category = input("Введите категорию продукции: ")
+    subcategory = input("Введите подкатегорию продукции: ")
+    while True:
+        try:
+            price = float(input("Введите цену продукции: "))
+            break
+        except ValueError:
+            print("Ошибка: введите числовое значение для цены.")
+
+    new_product = Product(name=name, category=category, subcategory=subcategory, price=price)
+    session.add(new_product)
+    session.commit()
+    print(f"Добавлена новая продукция: {name}")
+
+
+def delete_product():
+    while True:
+        try:
+            product_id = int(input("Введите ID товара для удаления: "))
+
+            if session.query(Product).filter_by(id=product_id).count() == 0:
+                print("Ошибка: товар с указанным ID не существует.")
+                continue
+            break
+        except ValueError:
+            print("Ошибка: введите целочисленное значение для ID товара.")
+
+    product = session.query(Product).filter_by(id=product_id).first()
+    session.delete(product)
+    session.commit()
+    print(f"Товар с ID {product_id} удален")
+
 def admin_menu():
     while True:
-        print("1. Создать товар")
-        print("2. Получить список заказов")
-        print("3. Выйти из аккаунта")
+        print("1. Продукция")
+        print("2. Заказы")
+        print("3. Пользователи")
+        print("4. Выйти из аккаунта")
         choice = input("Enter your choice: ")
 
         if choice == "1":
-            name = input("Введите имя продукции: ")
-            category = input("Введите категорию продукции: ")
-            subcategory = input("Введите подкатегорию продукции: ")
-            try:
-                price = int(input("Введите стоимость продукции: "))
-            except:
-                print("Цена должна быть числом")
-                continue
-            create_product(name, category, subcategory, price)
-        if choice == "6":
+            product_menu()
+        
+        if choice == "2":
+            pass
+
+        if choice == "3":
+            pass
+
+        if choice == "4":
             return None  
 
+def product_menu():
+    while True:
+        print("1. Получить список продукции")
+        print("2. Добавить продукцию")
+        print("3. Удалить продукцию")
+        print("4. Назад")
+        choice = input("Введите ваш выбор: ")
+
+        if choice == "1":
+            print(get_all_products_orm())
+        elif choice == "2":
+            add_product()
+        elif choice == "3":
+            delete_product()
+        elif choice == "4":
+            return None
+        else:
+            print("Неверный выбор. Пожалуйста, выберите снова.")
 
 def auth_menu():
     print("Welcome to the Console Authentication System")

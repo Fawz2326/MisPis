@@ -52,7 +52,7 @@ try:
                    deal_id INTEGER PRIMARY KEY AUTO_INCREMENT,
                    customer_id INTEGER NOT NULL,
                    product_id INTEGER NOT NULL,
-                   deal_date DATE NOT NULL,
+                   deal_date DATE NOT NULL DEFAULT CURRENT_DATE,
                    quantity INTEGER NOT NULL,
                    total_price DECIMAL(10, 2) NOT NULL,
                    FOREIGN KEY (customer_id) REFERENCES Customers(customer_id),
