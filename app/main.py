@@ -3,7 +3,7 @@ import bcrypt
 from prettytable import PrettyTable
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from db.models import Category, Style, Set, Product, OrderItem, SetItem, Role, User, SetOrder, Order
+from db.models import Product, OrderItem, Deals, Role, Customers, Stock, Order
 from sqlalchemy import inspect
 
 database_path = 'db/database.db'
@@ -89,6 +89,7 @@ def create_order(cart, user):
 
         cursor.execute("UPDATE orders SET (total_price) = (?) WHERE id = (?) ", (total_price, order,))
         db.commit()
+        cart['products'] = []
         db.close()
     else:
         print("Корзина пуста")
@@ -213,6 +214,42 @@ def delete_product():
     session.commit()
     print(f"Товар с ID {product_id} удален")
 
+def get_all_orders():
+    try:
+        orders = session.query(Order).all()
+        if not orders:
+            print("В базе данных нет заказов.")
+            return
+
+        table = PrettyTable()
+        table.field_names = ["ID", "ПользовательID", "Дата заказа", "Общая сумма"]
+
+        for order in orders:
+            table.add_row([order.id, order.customer_id, order.order_date, order.total_price])
+
+        print("Список заказов:")
+        print(table)
+    except Exception as e:
+        print("Ошибка при получении списка заказов:", e)
+
+def get_all_users():
+    try:
+        customers = session.query(Customers).all()
+        if not customers:
+            print("В базе данных нет пользователей.")
+            return
+
+        table = PrettyTable()
+        table.field_names = ["ID", "Имя", "Логин", "Роль"]
+
+        for user in customers:
+            table.add_row([user.id, user.name, user.username, user.role.name])
+
+        print("Список пользователей:")
+        print(table)
+    except Exception as e:
+        print("Ошибка при получении списка пользователей:", e)
+
 def admin_menu():
     while True:
         print("1. Продукция")
@@ -225,10 +262,10 @@ def admin_menu():
             product_menu()
         
         if choice == "2":
-            pass
+            get_all_orders()
 
         if choice == "3":
-            pass
+            get_all_users()
 
         if choice == "4":
             return None  
@@ -321,7 +358,7 @@ def catalog_menu(cart):
                     print("Продукции с таким ID не найдено")
         if choice == "2":
             return False
-
+##
 def get_all_products():
     db = sqlite3.connect(database_path)
     cursor = db.cursor()
@@ -333,7 +370,7 @@ def get_all_products():
     db.close()
 
     return products
-
+##
 def get_product(id):
     db = sqlite3.connect(database_path)
     cursor = db.cursor()

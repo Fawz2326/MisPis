@@ -6,7 +6,7 @@ from datetime import datetime
 Base = declarative_base()
 
 
-class Products(Base):
+class Product(Base):
     __tablename__ = 'products'
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
@@ -21,7 +21,6 @@ class Customers(Base):
     name = Column(String, nullable=False)
     username = Column(String, nullable=False)
     password = Column(String, nullable=False)
-    contact_details = Column(String)
     role_id = Column(Integer, ForeignKey('roles.id'), nullable=False)
     role = relationship("Role", backref="customers")
     __table_args__ = (CheckConstraint('role_id IN (1, 2)', name='valid_role'),)

@@ -18,7 +18,6 @@ try:
                    name VARCHAR(255) NOT NULL,
                    username VARCHAR(255) NOT NULL,
                    password TEXT NOT NULL,
-                   contact_details VARCHAR(255),
                    role_id INTEGER NOT NULL,
                    FOREIGN KEY (role_id) REFERENCES roles(id),
                    CONSTRAINT valid_role CHECK (role_id IN (1, 2))
