@@ -70,28 +70,52 @@ def create_order(cart, user):
     if cart['products']:
         db = sqlite3.connect(database_path)
         cursor = db.cursor()
-        cursor.execute("INSERT INTO orders (customer_id) VALUES (?)", (user[0],))
-        db.commit()
+        
+        try:
+            cursor.execute("INSERT INTO orders (customer_id) VALUES (?)", (user[0],))
+            db.commit()
 
-        cursor.execute("SELECT id FROM orders WHERE customer_id = (?) ORDER BY id DESC LIMIT 1", (user[0],))
-        order = cursor.fetchone()[0]
+            cursor.execute("SELECT id FROM orders WHERE customer_id = (?) ORDER BY id DESC LIMIT 1", (user[0],))
+            order = cursor.fetchone()[0]
 
-        total_price = 0
-        data_products = []
-        if cart['products']:
+            total_price = 0
+            data_products = []
+
             for product in cart['products']:
-                data = [product[2][0][0], order, product[3]]
+                product_id = product[2][0][0]
+                quantity = product[3]
+
+                # Проверка товаров на складе
+                cursor.execute("SELECT quantity FROM stock WHERE product_id = ?", (product_id,))
+                stock_quantity = cursor.fetchone()
+
+                if stock_quantity is None:
+                    raise ValueError(f"Товар с ID {product_id} отсутствует на складе")
+                
+                if stock_quantity[0] < quantity:
+                    raise ValueError(f"Недостаточно товара с ID {product_id} на складе. Доступно: {stock_quantity[0]}, нужно: {quantity}")
+
+                data = [product_id, order, quantity]
                 total_price += product[5]
                 data_products.append(data)
 
-        cursor.executemany("INSERT INTO orderitems (product_id, order_id, quantity) VALUES (?, ?, ?)", data_products)
-        db.commit()
+                # Обновление товаров на складе
+                cursor.execute("UPDATE stock SET quantity = quantity - ? WHERE product_id = ?", (quantity, product_id))
+                db.commit()
 
-        cursor.execute("UPDATE orders SET (total_price) = (?) WHERE id = (?) ", (total_price, order,))
-        db.commit()
-        cart['products'] = []
-        print(f'Заказ {order} успешно создан')
-        db.close()
+            cursor.executemany("INSERT INTO orderitems (product_id, order_id, quantity) VALUES (?, ?, ?)", data_products)
+            db.commit()
+
+            cursor.execute("UPDATE orders SET total_price = ? WHERE id = ?", (total_price, order))
+            db.commit()
+
+            cart['products'] = []
+            print(f'Заказ {order} успешно создан')
+        except Exception as e:
+            db.rollback()
+            print(f"Ошибка при создании заказа: {e}")
+        finally:
+            db.close()
     else:
         print("Корзина пуста")
 
