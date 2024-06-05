@@ -1,22 +1,22 @@
 import sqlite3
 
-database_path = './database.db'
+database_path = 'app/db/database.db'
 
 try:
     with sqlite3.connect(database_path) as db:
         cursor = db.cursor()
         queries = [
             """CREATE TABLE IF NOT EXISTS products (
-                   id INTEGER PRIMARY KEY AUTO_INCREMENT,
-                   name VARCHAR(255) NOT NULL,
-                   category VARCHAR(100) NOT NULL,
-                   subcategory VARCHAR(100),
-                   price DECIMAL(10, 2) NOT NUL
+                   id INTEGER PRIMARY KEY,
+                   name TEXT NOT NULL,
+                   category TEXT NOT NULL,
+                   subcategory TEXT,
+                   price DECIMAL(10, 2) NOT NULL
             )""",
             """CREATE TABLE IF NOT EXISTS customers (
-                   id INTEGER PRIMARY KEY AUTO_INCREMENT,
-                   name VARCHAR(255) NOT NULL,
-                   username VARCHAR(255) NOT NULL,
+                   id INTEGER PRIMARY KEY,
+                   name TEXT NOT NULL,
+                   username TEXT NOT NULL,
                    password TEXT NOT NULL,
                    role_id INTEGER NOT NULL,
                    FOREIGN KEY (role_id) REFERENCES roles(id),
@@ -24,7 +24,7 @@ try:
             )""",
     
             """CREATE TABLE IF NOT EXISTS orders (
-                   id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                   id INTEGER PRIMARY KEY,
                    customer_id INTEGER NOT NULL,
                    order_date DATE NOT NULL DEFAULT CURRENT_DATE,
                    total_price DECIMAL(10, 2) NOT NULL,
@@ -32,7 +32,7 @@ try:
             )""",
     
             """CREATE TABLE IF NOT EXISTS orderitems (
-                   order_item_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                   order_item_id INTEGER PRIMARY KEY,
                    order_id INTEGER NOT NULL,
                    product_id INTEGER NOT NULL,
                    quantity INTEGER NOT NULL,
@@ -41,14 +41,14 @@ try:
             )""",
     
             """CREATE TABLE IF NOT EXISTS stock (
-                   stock_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                   stock_id INTEGER PRIMARY KEY,
                    product_id INTEGER NOT NULL,
                    quantity INTEGER NOT NULL,
                    FOREIGN KEY (product_id) REFERENCES Products(product_id) 
             )""",
     
             """CREATE TABLE IF NOT EXISTS deals (
-                   deal_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                   deal_id INTEGER PRIMARY KEY,
                    customer_id INTEGER NOT NULL,
                    product_id INTEGER NOT NULL,
                    deal_date DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -56,12 +56,12 @@ try:
                    total_price DECIMAL(10, 2) NOT NULL,
                    FOREIGN KEY (customer_id) REFERENCES Customers(customer_id),
                    FOREIGN KEY (product_id) REFERENCES Products(product_id)  
-            )"""
+            )""",
 
             """CREATE TABLE IF NOT EXISTS roles (
                    id INTEGER PRIMARY KEY,
                    name TEXT NOT NULL
-            )""",
+            )"""
         ]
         for q in queries:
             cursor.execute(q)

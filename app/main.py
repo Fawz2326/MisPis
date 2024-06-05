@@ -6,9 +6,9 @@ from sqlalchemy.orm import sessionmaker
 from db.models import Product, OrderItem, Deals, Role, Customers, Stock, Order
 from sqlalchemy import inspect
 
-database_path = 'db/database.db'
+database_path = 'app/db/database.db'
 
-engine = create_engine('sqlite:///db/database.db')
+engine = create_engine('sqlite:///app/db/database.db')
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -313,7 +313,7 @@ def auth_menu():
             return user
     elif choice == "3":
         print("Exiting the program")
-        raise SystemExit(1)
+        raise SystemExit()
 
 def catalog_menu(cart):
     while True:
