@@ -31,7 +31,7 @@ class Order(Base):
     id = Column(Integer, primary_key=True)
     customer_id = Column(Integer, ForeignKey('customers.id'), nullable=False)
     order_date = Column(DateTime, nullable=False, default=datetime.utcnow())    
-    total_price = Column(Float, nullable=False)
+    total_price = Column(Float)
     user = relationship("Customers", backref="orders")
 
 
@@ -63,5 +63,5 @@ class Deals(Base):
     products_id = Column(Integer, ForeignKey('products.id'), nullable=False)
     deal_date = Column(DateTime, nullable=False, default=datetime.utcnow())
     quantity = Column(Integer, nullable=False)
-    total_price = Column(Float, nullable=False)
+    total_price = Column(Float)
 

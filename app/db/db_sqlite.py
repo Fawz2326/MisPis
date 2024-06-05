@@ -9,9 +9,9 @@ try:
             """CREATE TABLE IF NOT EXISTS products (
                    id INTEGER PRIMARY KEY,
                    name TEXT NOT NULL,
+                   price DECIMAL(10, 2) NOT NULL,
                    category TEXT NOT NULL,
-                   subcategory TEXT,
-                   price DECIMAL(10, 2) NOT NULL
+                   subcategory TEXT        
             )""",
             """CREATE TABLE IF NOT EXISTS customers (
                    id INTEGER PRIMARY KEY,
@@ -27,7 +27,7 @@ try:
                    id INTEGER PRIMARY KEY,
                    customer_id INTEGER NOT NULL,
                    order_date DATE NOT NULL DEFAULT CURRENT_DATE,
-                   total_price DECIMAL(10, 2) NOT NULL,
+                   total_price DECIMAL(10, 2),
                    FOREIGN KEY (customer_id) REFERENCES Customers(id)    
             )""",
     

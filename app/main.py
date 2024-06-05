@@ -95,11 +95,11 @@ def create_order(cart, user):
     else:
         print("Корзина пуста")
 
-def create_product(name, category, subcategory, price):
+def create_product(name, price, category, subcategory):
     db = sqlite3.connect(database_path)
     cursor = db.cursor()
-    cursor.execute("INSERT INTO products (name, category, subcategory, price) VALUES (?,?,?,?)",
-                    (name, category, subcategory, price)
+    cursor.execute("INSERT INTO products (name, price, category, subcategory) VALUES (?,?,?,?)",
+                    (name, price, category, subcategory)
                     )
     db.commit()
     print("Товар успешно создан")
@@ -170,11 +170,11 @@ def get_all_products_orm():
     products = session.query(Product).all()
 
     table = PrettyTable()
-    table.field_names = ["ID", "Name", "Category", "Subcategory", "Price"]
+    table.field_names = ["ID", "Name", "Price", "Category", "Subcategory"]
 
     rows = []
     for product in products:
-        rows.append([product.id, product.name, product.category, product.subcategory, product.price])
+        rows.append([product.id, product.name, product.price, product.category, product.subcategory])
 
     table.add_rows(rows)
 
@@ -192,7 +192,7 @@ def add_product():
         except ValueError:
             print("Ошибка: введите числовое значение для цены.")
 
-    new_product = Product(name=name, category=category, subcategory=subcategory, price=price)
+    new_product = Product(name=name, price=price, category=category, subcategory=subcategory)
     session.add(new_product)
     session.commit()
     print(f"Добавлена новая продукция: {name}")
@@ -364,7 +364,7 @@ def get_all_products():
     db = sqlite3.connect(database_path)
     cursor = db.cursor()
 
-    query = """SELECT p.id, p.name, p.category, p.subcategory, p.price FROM products p"""
+    query = """SELECT p.id, p.name, p.price, p.category, p.subcategory FROM products p"""
     cursor.execute(query)
     products = cursor.fetchall()
 
@@ -377,7 +377,7 @@ def get_product(id):
     cursor = db.cursor()
 
     query = """
-            SELECT p.id, p.name, p.category, p.subcategory, p.price FROM products p
+            SELECT p.id, p.name, p.price, p.category, p.subcategory FROM products p
             WHERE p.id == ?
             """
     cursor.execute(query, (id,))
